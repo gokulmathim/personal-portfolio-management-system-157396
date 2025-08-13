@@ -1,0 +1,60 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const title = 'Blog';
+---
+
+<Layout {title}>
+  <section>
+    <h1 class="section-title">Blog</h1>
+    <p class="subtitle">Thoughts on building and shipping software.</p>
+
+    <div id="blog-list" class="cards"></div>
+  </section>
+</Layout>
+
+<style>
+  .cards { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; }
+  .card-item { grid-column: span 12; }
+  @media (min-width: 720px) { .card-item { grid-column: span 6; } }
+  @media (min-width: 980px) { .card-item { grid-column: span 4; } }
+  .card-content { padding: 14px; }
+  .card-title { margin: 0 0 6px 0; font-size: 1.1rem; }
+  .card-desc { color: var(--text-secondary); font-size: 0.95rem; }
+  .tag-list { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+</style>
+
+<script type="module">
+  import { getBlogPosts } from '../../lib/api.ts';
+
+  const list = document.getElementById('blog-list');
+
+  function tagBadges(tags) {
+    if (!Array.isArray(tags) || !tags.length) return '';
+    return `<div class="tag-list">${tags.map(t=>`<span class="badge">${t}</span>`).join('')}</div>`;
+  }
+
+  function blogCard(b) {
+    return `
+      <article class="card card-item">
+        <a href="/blog/${b.slug || b.id}">
+          <div class="card-content">
+            <h3 class="card-title">${b.title || 'Untitled Post'}</h3>
+            <p class="card-desc">${b.excerpt || ''}</p>
+            ${tagBadges(b.tags)}
+          </div>
+        </a>
+      </article>
+    `;
+  }
+
+  async function load() {
+    try {
+      const posts = await getBlogPosts();
+      list.innerHTML = (posts || []).map(blogCard).join('') || '<p class="subtitle">No blog posts yet.</p>';
+    } catch (e) {
+      list.innerHTML = `<p class="subtitle">Failed to load posts: ${e?.message || 'Unknown error'}</p>`;
+    }
+  }
+  load();
+</script>

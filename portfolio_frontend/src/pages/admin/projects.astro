@@ -1,0 +1,147 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const title = 'Manage Projects';
+---
+
+<Layout {title}>
+  <section class="card">
+    <div class="admin">
+      <div class="head">
+        <h1 class="section-title">Projects</h1>
+        <div class="actions">
+          <a class="btn" href="/admin">Dashboard</a>
+          <a class="btn" href="/admin/blogs">Blogs</a>
+        </div>
+      </div>
+
+      <form id="createForm" class="form">
+        <h3>Create New Project</h3>
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="title">Title</label>
+            <input class="form-control" id="title" name="title" placeholder="Project title" required />
+          </div>
+          <div class="form-group">
+            <label for="url">Live URL</label>
+            <input class="form-control" id="url" name="url" placeholder="https://example.com" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="repo_url">Repository URL</label>
+          <input class="form-control" id="repo_url" name="repo_url" placeholder="https://github.com/..." />
+        </div>
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea class="form-control" id="description" name="description" rows="4" placeholder="About this project"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="tags">Tags (comma-separated)</label>
+          <input class="form-control" id="tags" name="tags" placeholder="astro, typescript, web" />
+        </div>
+        <button class="btn btn-primary" type="submit">Create</button>
+        <span id="status" class="subtitle"></span>
+      </form>
+
+      <hr class="sep"/>
+
+      <h3>Existing Projects</h3>
+      <div id="list" class="cards"></div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .admin { padding: 18px; }
+  .head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .grid-2 { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  @media (min-width: 780px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+  .cards { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; margin-top: 12px; }
+  .card-item { grid-column: span 12; }
+  @media (min-width: 980px) { .card-item { grid-column: span 6; } }
+  .card-content { padding: 14px; }
+  .meta { display: flex; gap: 10px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+</style>
+
+<script type="module">
+  import { isAuthenticated } from '../../lib/auth.ts';
+  import { getProjects, createProject, deleteProject } from '../../lib/api.ts';
+
+  if (!isAuthenticated()) {
+    location.replace('/admin/login');
+  }
+
+  const form = document.getElementById('createForm');
+  const statusEl = document.getElementById('status');
+  const list = document.getElementById('list');
+
+  function card(p) {
+    const repo = p.repo_url ? `<a class="btn" href="${p.repo_url}" target="_blank" rel="noopener">Repo</a>` : '';
+    const demo = p.url ? `<a class="btn" href="${p.url}" target="_blank" rel="noopener">Live</a>` : '';
+    return `
+      <article class="card card-item">
+        <div class="card-content">
+          <h3>${p.title || 'Untitled'}</h3>
+          <p class="subtitle">${p.description || ''}</p>
+          <div class="meta">
+            ${demo}
+            ${repo}
+            <button class="btn btn-outline" data-del="${p.id}">Delete</button>
+          </div>
+        </div>
+      </article>
+    `;
+  }
+
+  async function refresh() {
+    try {
+      const projects = await getProjects();
+      list.innerHTML = (projects || []).map(card).join('') || '<p class="subtitle">No projects yet.</p>';
+      list.querySelectorAll('button[data-del]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const id = btn.getAttribute('data-del');
+          if (!id) return;
+          btn.setAttribute('disabled', 'true');
+          try {
+            await deleteProject(id);
+            await refresh();
+          } catch (e) {
+            alert('Delete failed: ' + (e?.message || 'Unknown error'));
+          } finally {
+            btn.removeAttribute('disabled');
+          }
+        });
+      });
+    } catch (e) {
+      list.innerHTML = `<p class="subtitle">Failed to load: ${e?.message || 'Unknown error'}</p>`;
+    }
+  }
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    statusEl.textContent = 'Creating...';
+    const fd = new FormData(form);
+    const data = Object.fromEntries(fd.entries());
+    const payload = {
+      title: String(data.title || ''),
+      url: String(data.url || ''),
+      repo_url: String(data.repo_url || ''),
+      description: String(data.description || ''),
+      tags: String(data.tags || '')
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean),
+    };
+    try {
+      await createProject(payload);
+      statusEl.textContent = 'Created!';
+      form.reset();
+      await refresh();
+    } catch (e) {
+      statusEl.textContent = 'Failed: ' + (e?.message || 'Unknown error');
+    }
+  });
+
+  refresh();
+</script>

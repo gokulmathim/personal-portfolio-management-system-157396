@@ -1,11 +1,164 @@
 ---
-import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const title = 'Home';
 ---
 
-<Layout>
-	<Welcome />
+<Layout {title}>
+  <section class="hero card">
+    <div class="hero-inner">
+      <div class="hero-text">
+        <span class="badge">Welcome</span>
+        <h1>Building delightful web experiences</h1>
+        <p class="subtitle">
+          I’m a developer crafting modern, minimal, and scalable products.
+          Explore my projects, read my blog, and feel free to get in touch.
+        </p>
+        <div class="cta">
+          <a class="btn btn-primary" href="/projects">View Projects</a>
+          <a class="btn btn-outline" href="/contact">Contact</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-header">
+      <h2 class="section-title">Featured Projects</h2>
+      <a class="btn" href="/projects">See all</a>
+    </div>
+    <div id="projects" class="cards"></div>
+  </section>
+
+  <hr class="sep" />
+
+  <section class="section">
+    <div class="section-header">
+      <h2 class="section-title">Latest Blog Posts</h2>
+      <a class="btn" href="/blog">See all</a>
+    </div>
+    <div id="blogs" class="cards"></div>
+  </section>
 </Layout>
+
+<style>
+  .hero {
+    padding: 36px 28px;
+    background:
+      radial-gradient(600px 200px at 0% 0%, rgba(37, 99, 235, 0.08), transparent 60%),
+      radial-gradient(600px 200px at 100% 0%, rgba(20, 184, 166, 0.08), transparent 60%),
+      var(--card-bg);
+    overflow: hidden;
+  }
+  .hero-inner {
+    display: grid;
+    grid-template-columns: 1.2fr;
+    gap: 20px;
+    align-items: center;
+  }
+  .hero-text h1 {
+    margin: 8px 0 8px 0;
+    font-size: 2.2rem;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+  .cta { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+
+  .section { margin-top: 32px; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 14px;
+  }
+  .card-item {
+    grid-column: span 6;
+  }
+  @media (min-width: 880px) {
+    .card-item { grid-column: span 4; }
+  }
+  .card-content {
+    padding: 14px;
+  }
+  .card-title {
+    margin: 0 0 6px 0;
+    font-size: 1.1rem;
+  }
+  .card-desc {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+  }
+  .tag-list {
+    display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px;
+  }
+</style>
+
+<script type="module">
+  import { getProjects, getBlogPosts } from '../lib/api.ts';
+
+  const projectsEl = document.getElementById('projects');
+  const blogsEl = document.getElementById('blogs');
+
+  function tagBadges(tags) {
+    if (!Array.isArray(tags) || !tags.length) return '';
+    return `<div class="tag-list">${tags.slice(0, 5).map((t) => `<span class="badge">${t}</span>`).join('')}</div>`;
+  }
+
+  function projectCard(p) {
+    const href = p.url || '#';
+    const desc = p.description ? p.description : '';
+    return `
+      <article class="card card-item">
+        <a href="${href}" target="${href.startsWith('/') ? '_self' : '_blank'}" rel="noopener">
+          <div class="card-content">
+            <h3 class="card-title">${p.title || 'Untitled Project'}</h3>
+            <p class="card-desc">${desc}</p>
+            ${tagBadges(p.tags)}
+          </div>
+        </a>
+      </article>
+    `;
+  }
+
+  function blogCard(b) {
+    const href = '/blog/' + (b.slug || b.id);
+    const excerpt = b.excerpt || '';
+    return `
+      <article class="card card-item">
+        <a href="${href}">
+          <div class="card-content">
+            <h3 class="card-title">${b.title || 'Untitled Post'}</h3>
+            <p class="card-desc">${excerpt}</p>
+            ${tagBadges(b.tags)}
+          </div>
+        </a>
+      </article>
+    `;
+  }
+
+  async function hydrate() {
+    try {
+      const [projects, blogs] = await Promise.all([getProjects(), getBlogPosts()]);
+      if (projectsEl) {
+        const featured = (projects || []).slice(0, 6);
+        projectsEl.innerHTML = featured.map(projectCard).join('') || '<p class="subtitle">No projects available.</p>';
+      }
+      if (blogsEl) {
+        const latest = (blogs || []).slice(0, 6);
+        blogsEl.innerHTML = latest.map(blogCard).join('') || '<p class="subtitle">No blog posts available.</p>';
+      }
+    } catch (err) {
+      const msg = (err && err.message) ? err.message : 'Failed to load data.';
+      if (projectsEl) projectsEl.innerHTML = `<p class="subtitle">Projects load error: ${msg}</p>`;
+      if (blogsEl) blogsEl.innerHTML = `<p class="subtitle">Blog load error: ${msg}</p>`;
+    }
+  }
+
+  hydrate();
+</script>

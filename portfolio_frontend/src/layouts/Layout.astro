@@ -1,54 +1,185 @@
 ---
 import ThemeToggle from '../components/ThemeToggle.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+
+const siteName = import.meta.env.PUBLIC_SITE_NAME || 'My Portfolio';
+const pageTitle = Astro.props?.title ? `${Astro.props.title} • ${siteName}` : siteName;
 ---
 
 <!doctype html>
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
+		<meta name="theme-color" content="#2563eb" />
+		<meta name="description" content="Personal portfolio, projects, and blog." />
+		<title>{pageTitle}</title>
+
+		<!-- Open Graph -->
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content={pageTitle} />
+		<meta property="og:description" content="Personal portfolio, projects, and blog." />
+		<meta property="og:image" content="/og-image.png" />
+		<meta property="og:site_name" content={siteName} />
+
+		<!-- Twitter -->
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={pageTitle} />
+		<meta name="twitter:description" content="Personal portfolio, projects, and blog." />
+		<meta name="twitter:image" content="/og-image.png" />
 	</head>
 	<body>
 		<ThemeToggle />
-		<slot />
+		<Navbar />
+		<main class="container">
+			<slot />
+		</main>
+		<Footer />
 	</body>
 </html>
 
-<style>
+<style is:global>
+	/* Theme and design tokens */
 	:root {
+		--color-primary: #2563eb;
+		--color-secondary: #64748b;
+		--color-accent: #14b8a6;
+
 		/* Light theme variables */
 		--bg-color: #ffffff;
-		--text-color: #111827;
-		--text-secondary: #4b5563;
+		--text-color: #0f172a;
+		--text-secondary: #475569;
 		--border-color: rgba(0, 0, 0, 0.1);
-		--card-bg: rgba(255, 255, 255, 1);
-		--card-hover-bg: rgba(255, 255, 255, 0.55);
-		--shadow-color: rgba(0, 0, 0, 0.1);
-		--shadow-hover-color: rgba(0, 0, 0, 0.15);
+		--card-bg: #ffffff;
+		--card-hover-bg: #f8fafc;
+		--shadow-color: rgba(15, 23, 42, 0.06);
+		--shadow-hover-color: rgba(15, 23, 42, 0.12);
+		--muted-bg: #f8fafc;
 	}
 
 	body.dark-theme {
 		/* Dark theme variables */
-		--bg-color: #111827;
-		--text-color: #f9fafb;
-		--text-secondary: #d1d5db;
-		--border-color: rgba(255, 255, 255, 0.2);
-		--card-bg: rgba(31, 41, 55, 0.9);
-		--card-hover-bg: rgba(31, 41, 55, 0.7);
+		--bg-color: #0b1220;
+		--text-color: #e5e7eb;
+		--text-secondary: #cbd5e1;
+		--border-color: rgba(255, 255, 255, 0.15);
+		--card-bg: rgba(15, 23, 42, 0.7);
+		--card-hover-bg: rgba(15, 23, 42, 0.5);
 		--shadow-color: rgba(0, 0, 0, 0.3);
 		--shadow-hover-color: rgba(0, 0, 0, 0.4);
+		--muted-bg: #0f172a;
 	}
 
-	html,
+	/* CSS Reset (modern minimal) */
+	*,
+	*::before,
+	*::after { box-sizing: border-box; }
+	html, body { height: 100%; }
+	html { -webkit-text-size-adjust: 100%; }
 	body {
 		margin: 0;
-		width: 100%;
-		height: 100%;
-		background-color: var(--bg-color);
+		font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell,
+			Noto Sans, Helvetica Neue, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+		line-height: 1.6;
+		background: var(--bg-color);
 		color: var(--text-color);
 		transition: background-color 0.3s ease, color 0.3s ease;
+	}
+
+	a { color: inherit; text-decoration: none; }
+	img { max-width: 100%; display: block; }
+
+	.container {
+		max-width: 1100px;
+		margin: 0 auto;
+		padding: 24px 20px 64px;
+	}
+
+	.card {
+		background: var(--card-bg);
+		border: 1px solid var(--border-color);
+		border-radius: 14px;
+		box-shadow: 0 1px 2px var(--shadow-color);
+		transition: box-shadow 0.2s ease, transform 0.05s ease, background 0.2s ease, border-color 0.2s ease;
+	}
+
+	.card:hover {
+		box-shadow: 0 8px 24px var(--shadow-hover-color);
+		transform: translateY(-1px);
+		background: var(--card-hover-bg);
+	}
+
+	.grid {
+		display: grid;
+		grid-template-columns: repeat(12, 1fr);
+		gap: 20px;
+	}
+
+	.section-title {
+		font-size: 1.75rem;
+		margin: 8px 0 16px 0;
+	}
+
+	.subtitle {
+		color: var(--text-secondary);
+		margin-top: -8px;
+		margin-bottom: 24px;
+	}
+
+	.btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		padding: 10px 14px;
+		border-radius: 10px;
+		border: 1px solid var(--border-color);
+		background: var(--bg-color);
+		cursor: pointer;
+		transition: background 0.2s ease, border-color 0.2s ease;
+	}
+
+	.btn-primary {
+		background: var(--color-primary);
+		color: white;
+		border-color: transparent;
+	}
+
+	.btn-outline {
+		background: transparent;
+	}
+
+	.badge {
+		display: inline-block;
+		padding: 2px 8px;
+		border-radius: 999px;
+		background: var(--muted-bg);
+		border: 1px solid var(--border-color);
+		color: var(--text-secondary);
+		font-size: 0.8rem;
+	}
+
+	.form-control {
+		display: block;
+		width: 100%;
+		padding: 10px 12px;
+		border-radius: 10px;
+		border: 1px solid var(--border-color);
+		background: transparent;
+		color: var(--text-color);
+	}
+
+	.form-group {
+		display: grid;
+		gap: 8px;
+		margin-bottom: 14px;
+	}
+
+	hr.sep {
+		border: none;
+		border-top: 1px solid var(--border-color);
+		margin: 24px 0;
 	}
 </style>

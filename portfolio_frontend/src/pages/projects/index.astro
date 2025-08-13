@@ -1,0 +1,67 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const title = 'Projects';
+---
+
+<Layout {title}>
+  <section>
+    <h1 class="section-title">Projects</h1>
+    <p class="subtitle">A selection of my work.</p>
+
+    <div id="project-list" class="cards"></div>
+  </section>
+</Layout>
+
+<style>
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 14px;
+  }
+  .card-item { grid-column: span 12; }
+  @media (min-width: 720px) {
+    .card-item { grid-column: span 6; }
+  }
+  @media (min-width: 980px) {
+    .card-item { grid-column: span 4; }
+  }
+  .card-content { padding: 14px; }
+  .card-title { margin: 0 0 6px 0; font-size: 1.1rem; }
+  .card-desc { color: var(--text-secondary); font-size: 0.95rem; }
+  .meta { display: flex; gap: 10px; align-items: center; margin-top: 8px; }
+</style>
+
+<script type="module">
+  import { getProjects } from '../../lib/api.ts';
+
+  const list = document.getElementById('project-list');
+
+  function projectCard(p) {
+    const repo = p.repo_url ? `<a class="btn" href="${p.repo_url}" target="_blank" rel="noopener">Repo</a>` : '';
+    const demo = p.url ? `<a class="btn btn-primary" href="${p.url}" target="_blank" rel="noopener">Live</a>` : '';
+    return `
+      <article class="card card-item">
+        <div class="card-content">
+          <h3 class="card-title">${p.title || 'Untitled Project'}</h3>
+          <p class="card-desc">${p.description || ''}</p>
+          <div class="meta">
+            ${demo}
+            ${repo}
+          </div>
+        </div>
+      </article>
+    `;
+  }
+
+  async function load() {
+    try {
+      const projects = await getProjects();
+      list.innerHTML = (projects || []).map(projectCard).join('') || '<p class="subtitle">No projects yet.</p>';
+    } catch (e) {
+      list.innerHTML = `<p class="subtitle">Failed to load projects: ${e?.message || 'Unknown error'}</p>`;
+    }
+  }
+
+  load();
+</script>

@@ -1,0 +1,53 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const { slug } = Astro.params;
+const title = 'Blog Post';
+---
+
+<Layout {title}>
+  <article class="card">
+    <div class="post">
+      <p class="subtitle"><a href="/blog">← Back to Blog</a></p>
+      <h1 id="post-title" class="section-title">Loading...</h1>
+      <p id="post-meta" class="subtitle"></p>
+      <div id="post-content" class="content"></div>
+    </div>
+  </article>
+</Layout>
+
+<style>
+  .post { padding: 18px; }
+  .content { margin-top: 16px; }
+  .content p { margin: 0 0 12px 0; }
+  .content img { border-radius: 10px; border: 1px solid var(--border-color); }
+  .content pre { overflow: auto; padding: 12px; border-radius: 10px; background: var(--muted-bg); }
+</style>
+
+<script type="module">
+  import { getBlogPostBySlug } from '../../lib/api.ts';
+
+  const slug = `${Astro?.params?.slug || ''}`;
+  const titleEl = document.getElementById('post-title');
+  const metaEl = document.getElementById('post-meta');
+  const contentEl = document.getElementById('post-content');
+
+  async function load() {
+    try {
+      const post = await getBlogPostBySlug(slug);
+      if (!post) throw new Error('Not found');
+
+      titleEl.textContent = post.title || 'Untitled Post';
+      metaEl.textContent = post.published_at ? new Date(post.published_at).toLocaleString() : '';
+      // Render content as HTML if provided; otherwise as plain text
+      const html = post.content || '';
+      contentEl.innerHTML = html;
+      document.title = `${post.title} • ${document.title}`;
+    } catch (e) {
+      titleEl.textContent = 'Post not found';
+      metaEl.textContent = '';
+      contentEl.innerHTML = `<p class="subtitle">${e?.message || 'Unknown error'}</p>`;
+    }
+  }
+  load();
+</script>

@@ -1,0 +1,52 @@
+---
+const year = new Date().getFullYear();
+const siteName = import.meta.env.PUBLIC_SITE_NAME || 'My Portfolio';
+---
+
+<footer class="footer">
+  <div class="footer-inner">
+    <span>© {year} {siteName}</span>
+    <nav class="footer-links">
+      <a href="/about">About</a>
+      <a href="/projects">Projects</a>
+      <a href="/blog">Blog</a>
+      <a href="/contact">Contact</a>
+    </nav>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    margin-top: 48px;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-color);
+  }
+  .footer-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--text-secondary);
+  }
+  .footer-links {
+    display: flex;
+    gap: 12px;
+  }
+  .footer a {
+    color: var(--text-secondary);
+    border: 1px solid transparent;
+    padding: 6px 8px;
+    border-radius: 8px;
+  }
+  .footer a:hover {
+    color: var(--text-color);
+    border-color: var(--border-color);
+    background: var(--card-hover-bg);
+  }
+  @media (max-width: 640px) {
+    .footer-inner { flex-direction: column; align-items: flex-start; }
+  }
+</style>

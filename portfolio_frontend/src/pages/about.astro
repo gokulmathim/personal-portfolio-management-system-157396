@@ -1,0 +1,86 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = 'About';
+---
+
+<Layout {title}>
+  <section class="card">
+    <div class="about">
+      <h1 class="section-title">About</h1>
+      <p class="subtitle">A brief introduction.</p>
+
+      <div class="about-grid">
+        <div class="about-photo">
+          <div id="avatar" class="avatar-skeleton"></div>
+        </div>
+        <div class="about-text">
+          <h3 id="name">Loading...</h3>
+          <p id="headline" class="subtitle"></p>
+          <p id="bio" style="margin-top: 10px;"></p>
+          <div id="social" class="social"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .about { padding: 18px; }
+  .about-grid {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+  .about-photo img {
+    width: 120px; height: 120px; border-radius: 16px;
+    object-fit: cover; border: 1px solid var(--border-color);
+  }
+  .avatar-skeleton {
+    width: 120px; height: 120px; border-radius: 16px; background: var(--muted-bg);
+    border: 1px solid var(--border-color);
+  }
+  .social { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+  .social a { color: var(--text-secondary); }
+</style>
+
+<script type="module">
+  import { getProfile } from '../lib/api.ts';
+
+  const avatarEl = document.getElementById('avatar');
+  const nameEl = document.getElementById('name');
+  const headlineEl = document.getElementById('headline');
+  const bioEl = document.getElementById('bio');
+  const socialEl = document.getElementById('social');
+
+  function link(label, href) {
+    return `<a class="btn" href="${href}" target="_blank" rel="noopener">${label}</a>`;
+  }
+
+  async function load() {
+    try {
+      const p = await getProfile();
+      if (p?.avatar_url) {
+        avatarEl.innerHTML = `<img src="${p.avatar_url}" alt="Avatar" />`;
+      }
+      nameEl.textContent = p?.name || 'Your Name';
+      headlineEl.textContent = p?.headline || '';
+      bioEl.textContent = p?.bio || '';
+
+      const s = p?.social || {};
+      const items = [];
+      if (s.website) items.push(link('Website', s.website));
+      if (s.github) items.push(link('GitHub', s.github));
+      if (s.linkedin) items.push(link('LinkedIn', s.linkedin));
+      if (s.twitter) items.push(link('Twitter/X', s.twitter));
+      if (s.email) items.push(link('Email', `mailto:${s.email}`));
+      socialEl.innerHTML = items.join('');
+    } catch (e) {
+      nameEl.textContent = 'About data unavailable';
+      headlineEl.textContent = '';
+      bioEl.textContent = e?.message || 'Unknown error';
+    }
+  }
+  load();
+</script>
