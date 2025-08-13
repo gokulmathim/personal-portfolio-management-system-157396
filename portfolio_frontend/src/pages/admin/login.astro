@@ -1,0 +1,63 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const title = 'Admin Login';
+---
+
+<Layout {title}>
+  <section class="card">
+    <div class="login">
+      <h1 class="section-title">Admin Login</h1>
+      <p class="subtitle">Sign in to manage your portfolio content.</p>
+
+      <form id="loginForm" class="form" autocomplete="on">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input class="form-control" id="email" name="email" type="email" placeholder="you@example.com" required />
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input class="form-control" id="password" name="password" type="password" placeholder="••••••••" required />
+        </div>
+        <button class="btn btn-primary" type="submit">Sign in</button>
+        <span id="status" class="subtitle"></span>
+      </form>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .login { padding: 18px; max-width: 520px; }
+  #status { margin-left: 10px; }
+</style>
+
+<script type="module">
+  import { login } from '../../lib/api.ts';
+  import { setToken, isAuthenticated } from '../../lib/auth.ts';
+
+  if (isAuthenticated()) {
+    location.replace('/admin');
+  }
+
+  const form = document.getElementById('loginForm');
+  const statusEl = document.getElementById('status');
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    statusEl.textContent = 'Signing in...';
+    const fd = new FormData(form);
+    const payload = Object.fromEntries(fd.entries());
+    try {
+      const res = await login(String(payload.email || ''), String(payload.password || ''));
+      if (res?.access_token) {
+        setToken(res.access_token);
+        statusEl.textContent = 'Success. Redirecting...';
+        location.replace('/admin');
+      } else {
+        statusEl.textContent = 'Unexpected response from server.';
+      }
+    } catch (err) {
+      statusEl.textContent = 'Login failed: ' + (err?.message || 'Unknown error');
+    }
+  });
+</script>

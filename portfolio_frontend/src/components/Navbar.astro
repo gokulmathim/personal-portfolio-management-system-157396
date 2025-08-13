@@ -1,0 +1,114 @@
+---
+const siteName = import.meta.env.PUBLIC_SITE_NAME || 'My Portfolio';
+const currentPath = Astro.url.pathname || '/';
+const links = [
+  { href: '/', label: 'Home' },
+  { href: '/projects', label: 'Projects' },
+  { href: '/blog', label: 'Blog' },
+  { href: '/about', label: 'About' },
+  { href: '/contact', label: 'Contact' },
+  { href: '/admin', label: 'Admin' },
+];
+---
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="brand">{siteName}</a>
+
+    <button class="menu-btn" id="menu-btn" aria-label="Toggle Menu">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </button>
+
+    <ul class="nav-links" id="nav-links">
+      {links.map(({ href, label }) => (
+        <li>
+          <a href={href} class={currentPath === href ? 'active' : ''}>{label}</a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</nav>
+
+<style>
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--bg-color);
+    border-bottom: 1px solid var(--border-color);
+    backdrop-filter: blur(10px);
+  }
+  .nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 10px 20px;
+  }
+  .brand {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .nav a {
+    display: inline-flex;
+    padding: 8px 10px;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    border: 1px solid transparent;
+  }
+  .nav a:hover {
+    color: var(--text-color);
+    border-color: var(--border-color);
+    background: var(--card-hover-bg);
+  }
+  .nav a.active {
+    color: var(--text-color);
+    background: var(--muted-bg);
+    border-color: var(--border-color);
+  }
+  .menu-btn {
+    display: none;
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    border-radius: 8px;
+  }
+  @media (max-width: 820px) {
+    .menu-btn { display: inline-flex; }
+    .nav-links {
+      position: absolute;
+      right: 20px;
+      top: 56px;
+      flex-direction: column;
+      align-items: stretch;
+      padding: 10px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-color);
+      border-radius: 12px;
+      display: none;
+      min-width: 180px;
+      box-shadow: 0 8px 24px var(--shadow-color);
+    }
+    .nav-links.open { display: flex; }
+  }
+</style>
+
+<script>
+  const btn = document.getElementById('menu-btn');
+  const links = document.getElementById('nav-links');
+  if (btn && links) {
+    btn.addEventListener('click', () => links.classList.toggle('open'));
+  }
+</script>
