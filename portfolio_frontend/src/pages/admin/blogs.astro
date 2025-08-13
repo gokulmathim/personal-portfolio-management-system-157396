@@ -85,7 +85,7 @@ const title = 'Manage Blogs';
           <p class="subtitle">${p.excerpt || ''}</p>
           <div class="meta">
             <a class="btn btn-outline" href="/blog/${p.slug || p.id}" target="_blank" rel="noopener">View</a>
-            <button class="btn btn-outline" data-del="${p.slug || p.id}">Delete</button>
+            <button class="btn btn-outline" data-del="${p.id}">Delete</button>
             <span class="badge">${date}</span>
           </div>
         </div>

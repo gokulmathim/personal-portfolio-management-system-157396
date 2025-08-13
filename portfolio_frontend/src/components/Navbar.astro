@@ -24,7 +24,7 @@ const links = [
     <ul class="nav-links" id="nav-links">
       {links.map(({ href, label }) => (
         <li>
-          <a href={href} class={currentPath === href ? 'active' : ''}>{label}</a>
+          <a href={href} class={(href !== '/' ? (currentPath === href || currentPath.startsWith(href + '/')) : currentPath === '/') ? 'active' : ''}>{label}</a>
         </li>
       ))}
     </ul>

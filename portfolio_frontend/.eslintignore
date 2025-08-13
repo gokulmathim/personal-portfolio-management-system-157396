@@ -1,0 +1,4 @@
+# Ignore generated and build output
+node_modules/
+dist/
+.astro/
